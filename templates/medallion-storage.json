@@ -1,0 +1,56 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "Provisioning a single S3 Bucket for Medallion Architecture (Bronze, Silver, Gold folders).",
+  "Parameters": {
+    "ProjectName": {
+      "Type": "String",
+      "Default": "sentinel-fraud-detection"
+    }
+  },
+  "Resources": {
+    "MedallionDataLake": {
+      "Type": "AWS::S3::Bucket",
+      "DeletionPolicy": "Delete",
+      "Properties": {
+        "BucketName": {
+          "Fn::Sub": "${ProjectName}-datalake"
+        },
+        "VersioningConfiguration": {
+          "Status": "Enabled"
+        },
+        "BucketEncryption": {
+          "ServerSideEncryptionConfiguration": [
+            {
+              "ServerSideEncryptionByDefault": {
+                "SSEAlgorithm": "AES256"
+              }
+            }
+          ]
+        },
+        "LifecycleConfiguration": {
+          "Rules": [
+            {
+              "Id": "BronzeRawRetention",
+              "Status": "Enabled",
+              "Prefix": "bronze/",
+              "Transitions": [
+                {
+                  "TransitionInDays": 90,
+                  "StorageClass": "GLACIER"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "DataLakeBucketName": {
+      "Value": { "Ref": "MedallionDataLake" },
+      "Export": {
+        "Name": "Sentinel-DataLakeBucket"
+      }
+    }
+  }
+}

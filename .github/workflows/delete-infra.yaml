@@ -19,20 +19,19 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Empty S3 Bucket (Required before deletion)
+      - name: Empty S3 Bucket (Keep Bucket, Remove Files)
         run: |
+          # Find the bucket name
           BUCKET_NAME=$(aws s3 ls | grep sentinel-fraud-detection-datalake | awk '{print $3}')
 
           if [ -n "$BUCKET_NAME" ]; then
-            echo "Found bucket: $BUCKET_NAME. Starting recursive deletion..."
-            # Remove all versions (important since versioning is enabled)
-            aws s3 rb s3://$BUCKET_NAME --force 
-          else
-            echo "Bucket not found or already deleted."
+            echo "Emptying bucket: $BUCKET_NAME..."
+            # Delete objects AND markers (handles versioning)
+            aws s3api delete-objects --bucket $BUCKET_NAME \
+              --delete "$(aws s3api list-object-versions --bucket $BUCKET_NAME --output json --query '{Objects: Versions[].{Key:Key,VersionId:VersionId}}')"
           fi
 
       - name: Delete CloudFormation Stack
         run: |
           aws cloudformation delete-stack --stack-name sentinel-s3-stack
-          echo "Waiting for stack deletion..."
           aws cloudformation wait stack-delete-complete --stack-name sentinel-s3-stack

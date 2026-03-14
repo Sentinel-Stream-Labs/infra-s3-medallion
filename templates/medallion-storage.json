@@ -38,16 +38,71 @@
                   "TransitionInDays": 90,
                   "StorageClass": "GLACIER"
                 }
-              ]
+              ],
+              "Expiration": {
+                "Days": 365
+              }
+            },
+            {
+              "Id": "SilverValidatedRetention",
+              "Status": "Enabled",
+              "Prefix": "silver/",
+              "Transitions": [
+                {
+                  "TransitionInDays": 180,
+                  "StorageClass": "GLACIER"
+                }
+              ],
+              "Expiration": {
+                "Days": 730
+              }
+            },
+            {
+              "Id": "GoldEnrichedRetention",
+              "Status": "Enabled",
+              "Prefix": "gold/",
+              "Transitions": [
+                {
+                  "TransitionInDays": 90,
+                  "StorageClass": "GLACIER"
+                }
+              ],
+              "Expiration": {
+                "Days": 180
+              }
+            },
+            {
+              "Id": "TempFileCleanup",
+              "Status": "Enabled",
+              "Prefix": "temp/",
+              "Expiration": {
+                "Days": 7
+              }
             }
           ]
-        }
+        },
+        "Tags": [
+          {
+            "Key": "Environment",
+            "Value": "Production"
+          },
+          {
+            "Key": "Project",
+            "Value": "Sentinel-Fraud-Detection"
+          },
+          {
+            "Key": "Architecture",
+            "Value": "Medallion"
+          }
+        ]
       }
     }
   },
   "Outputs": {
     "DataLakeBucketName": {
-      "Value": { "Ref": "MedallionDataLake" },
+      "Value": {
+        "Ref": "MedallionDataLake"
+      },
       "Export": {
         "Name": "Sentinel-DataLakeBucket"
       }
